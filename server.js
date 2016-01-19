@@ -23,37 +23,38 @@ app.use('/', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.get('/api/translations', function (req, res){
-  fs.readdir(path.join(__dirname,'translations'), function (err, data){
-    var translations = _.chain(data).filter(function (item){
-      return item.indexOf('.json') != -1;
-    }).map(function (item){
-      return item.replace('.json','');
-    }).value();
-    res.setHeader('Cache-Control', 'no-cache');
-    res.json(translations);
-  })
-})
-app.get('/api/translation/:lang', function(req, res) {
-  var json_path = path.join(__dirname,'translations', req.params.lang+'.json');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.json(require(json_path));
+app.get('/api/translations', function (req, res) {
+    fs.readdir(path.join(__dirname, 'translations'), function (err, data) {
+        var translations = _.chain(data).filter(function (item) {
+            return item.indexOf('.json') != -1;
+        }).map(function (item) {
+            return item.replace('i18n_', '').replace('.json', '');
+        }).value();
+        res.setHeader('Cache-Control', 'no-cache');
+        res.json(translations);
+    });
 });
 
-app.post('/api/translation/:lang', function(req, res) {
-  var json_path = path.join(__dirname,'translations', req.params.lang+'.json');
-  fs.writeFile(json_path, JSON.stringify(req.body.json, null, 4), function(err) {
-      if (err) {
-        console.error(err);
-        process.exit(1);
-      }
-      res.setHeader('Cache-Control', 'no-cache');
-      res.json(req.body.json);
+app.get('/api/translation/:lang', function (req, res) {
+    var json_path = path.join(__dirname, 'translations', 'i18n_' + req.params.lang + '.json');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.json(require(json_path));
+});
+
+app.post('/api/translation/:lang', function (req, res) {
+    var json_path = path.join(__dirname, 'translations', req.params.lang + '.json');
+    fs.writeFile(json_path, JSON.stringify(req.body.json, null, 4), function (err) {
+        if (err) {
+            console.error(err);
+            process.exit(1);
+        }
+        res.setHeader('Cache-Control', 'no-cache');
+        res.json(req.body.json);
     });
 
 });
 
 
-app.listen(app.get('port'), function() {
-  console.log('Server started: http://localhost:' + app.get('port') + '/');
+app.listen(app.get('port'), function () {
+    console.log('Server started: http://localhost:' + app.get('port') + '/');
 });
